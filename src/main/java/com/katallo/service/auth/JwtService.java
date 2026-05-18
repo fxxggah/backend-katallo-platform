@@ -28,6 +28,7 @@ public class JwtService {
     }
 
     public String generateToken(Long userId) {
+
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + expiration);
 
@@ -39,20 +40,22 @@ public class JwtService {
                 .compact();
     }
 
-    public boolean isValid(String token) {
-        try {
-            getClaims(token);
-            return true;
-        } catch (JwtException | IllegalArgumentException e) {
-            return false;
-        }
-    }
-
     public Long getUserId(String token) {
         return Long.valueOf(getClaims(token).getSubject());
     }
 
+    public boolean isValid(String token) {
+        try {
+            getClaims(token);
+            return true;
+
+        } catch (UnauthorizedException ex) {
+            return false;
+        }
+    }
+
     private Claims getClaims(String token) {
+
         if (token == null || token.isBlank()) {
             throw new UnauthorizedException(
                     ErrorCode.UNAUTHORIZED,
@@ -61,19 +64,22 @@ public class JwtService {
         }
 
         try {
+
             return Jwts.parserBuilder()
                     .setSigningKey(getSigningKey())
                     .build()
                     .parseClaimsJws(token)
                     .getBody();
 
-        } catch (ExpiredJwtException e) {
+        } catch (ExpiredJwtException ex) {
+
             throw new UnauthorizedException(
                     ErrorCode.TOKEN_EXPIRED,
                     "Token expirado."
             );
 
-        } catch (JwtException | IllegalArgumentException e) {
+        } catch (JwtException | IllegalArgumentException ex) {
+
             throw new UnauthorizedException(
                     ErrorCode.INVALID_TOKEN,
                     "Token inválido."
