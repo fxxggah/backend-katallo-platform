@@ -1,120 +1,522 @@
-# 🛍️ Plataforma de Catálogo Online para Lojas
+# ⚙️ Katallo Backend — API da: Katallo | Catálogos Online
 
-Este projeto é uma plataforma de catálogo online desenvolvida para pequenas lojas, com o objetivo de organizar produtos, facilitar a visualização e gerar vendas via WhatsApp.
+O backend da **Katallo** é responsável por toda a lógica de negócio da plataforma, incluindo:
 
-⚠️ **Status do Projeto: Em desenvolvimento**
+- autenticação
+- gerenciamento de lojas
+- produtos
+- categorias
+- upload de imagens
+- convites de administradores
+- segurança multi-tenant
 
----
+A API foi desenvolvida utilizando **Java + Spring Boot**, seguindo boas práticas de arquitetura backend moderna e preparada para evolução futura como SaaS.
 
-## 🚀 Sobre o Projeto
-
-A plataforma funciona como uma vitrine digital para lojas, permitindo que clientes:
-
-- Naveguem por produtos e categorias
-- Visualizem detalhes dos produtos
-- Adicionem itens ao carrinho
-- Finalizem o pedido via WhatsApp
-
-Além disso, conta com um **painel administrativo** para gerenciamento da loja.
+⚠️ **Status do projeto: Em desenvolvimento ativo**
 
 ---
 
-## 🧱 Arquitetura
+# 🚀 Sobre o Projeto
 
-O projeto está sendo desenvolvido seguindo uma arquitetura moderna baseada em:
+A Katallo é uma plataforma de catálogo online voltada para pequenas lojas que vendem principalmente via Whatsapp
 
-### Frontend
-- Next.js
-- TypeScript
-- TailwindCSS
-- Consumo de API REST
+O objetivo é transformar catálogos desorganizados em uma experiência moderna, profissional e escalável.
 
-### Backend
-- Java + Spring Boot
-- Spring Security + JWT
-- JPA / Hibernate
+O backend fornece:
+
+- API REST
+- autenticação segura
+- gerenciamento multi-loja
+- isolamento de dados
+- painel administrativo
+
+---
+
+# 🧱 Stack Tecnológica
+
+## Backend
+
+- Java 17
+- Spring Boot
+- Spring Web
+- Spring Security
+- Spring Data JPA
+- Hibernate
+- JWT Authentication
+- Lombok
+- Maven
+
+## Banco de Dados
+
 - MySQL
 
-### Infraestrutura
-- Frontend: Vercel
-- Backend: Railway
-- Imagens: Cloudinary
+## Upload e Infraestrutura
+
+- Cloudinary
+- Docker
+
+## Testes
+
+- JUnit
+- Mockito
+- H2 Database
+- Spring Security Test
 
 ---
 
-## ✨ Funcionalidades (MVP)
+# 🏗️ Arquitetura
 
-- [x] Catálogo de produtos
-- [x] Categorias
-- [x] Página de produto
-- [x] Carrinho (frontend)
-- [x] Integração com WhatsApp
-- [x] Painel administrativo
-- [x] Criação de loja
-- [x] Sistema de convites para administradores
+O projeto segue arquitetura em camadas:
 
----
+```txt
+Controller → Service → Repository → Entity
+```
 
-## 🔐 Autenticação
+Separações utilizadas:
 
-- Login via Google (OAuth)
-- Autenticação baseada em JWT
-- Rotas administrativas protegidas
+- DTOs para entrada e saída
+- Services para regras de negócio
+- Repositories para persistência
+- Controllers para camada HTTP
 
 ---
 
-## 🏪 Multi-loja (SaaS Ready)
+# 🏪 Arquitetura Multi-Loja+
 
-O sistema foi projetado para suportar múltiplas lojas (multi-tenant), onde cada loja possui:
+A Katallo foi construída como uma plataforma multi-tenant.
 
-- Catálogo próprio
-- Identidade visual personalizada
-- Administradores próprios
+Cada loja possui:
+
+- produtos próprios
+- categorias próprias
+- administradores próprios
+- identidade visual própria
+
+A separação de dados ocorre através do `storeId`.
 
 ---
 
-## ⚠️ Aviso Importante
+# 🔒 Segurança Multi-Tenant
+
+Todos os endpoints administrativos validam:
+
+- se o usuário pertence à loja
+- se o recurso pertence à loja
+
+Exemplo:
+
+```txt
+PUT /api/v1/admin/stores/{storeSlug}/products/{id}
+```
+
+O backend verifica:
+
+- acesso do usuário à loja
+- pertencimento do produto à loja
+
+---
+
+# 🔐 Autenticação
+
+A autenticação é utilizada apenas no painel administrativo.
+
+Método suportado:
+
+- Google OAuth
+
+Fluxo:
+
+1. Usuário faz login com Google
+2. Frontend recebe o ID Token
+3. Backend valida o token Google
+4. Backend cria/encontra usuário
+5. Backend gera JWT próprio
+6. Frontend utiliza JWT nas requisições autenticadas
+
+---
+
+# 🧠 Estratégia JWT
+
+Características:
+
+- JWT simples
+- expiração de 24h
+- sem refresh token no MVP
+
+Header utilizado:
+
+```txt
+Authorization: Bearer {JWT}
+```
+
+Quando o token expira:
+
+- backend retorna `401 Unauthorized`
+- frontend remove token
+- usuário é redirecionado para login
+
+---
+
+# 📂 Estrutura do Projeto
+
+```txt
+src/
+├── main/
+│   ├── java/
+│   │   └── com/katallo/
+│   │       ├── annotation/
+│   │       ├── config/
+│   │       ├── controller/
+│   │       ├── domain/
+│   │       ├── dto/
+│   │       ├── exception/
+│   │       ├── provider/
+│   │       ├── repository/
+│   │       ├── resolver/
+│   │       ├── security/
+│   │       ├── service/
+│   │       ├── util/
+│   │       └── KatalloPlatformApplication.java
+│   └── resources/
+│       └── application.yaml
+│
+├── test/
+│   ├── java/
+│   └── resources/
+```
+
+---
+
+# 🌐 Endpoints da API
+
+Prefixo padrão:
+
+```txt
+/api/v1
+```
+
+---
+
+# 📦 Endpoints Públicos
+
+## Loja
+
+```txt
+GET /api/v1/stores/{storeSlug}
+```
+
+## Categorias
+
+```txt
+GET /api/v1/stores/{storeSlug}/categories
+```
+
+## Produtos
+
+```txt
+GET /api/v1/stores/{storeSlug}/products
+GET /api/v1/stores/{storeSlug}/products/slug/{productSlug}
+GET /api/v1/stores/{storeSlug}/categories/{categorySlug}/products
+```
+
+## Convites
+
+```txt
+GET /api/v1/invites/{token}
+```
+
+---
+
+# 🔐 Endpoints Administrativos
+
+## Autenticação
+
+```txt
+POST /api/v1/auth/google
+```
+
+## Lojas
+
+```txt
+POST /api/v1/stores
+PUT /api/v1/admin/stores/{storeSlug}
+```
+
+## Produtos
+
+```txt
+GET    /api/v1/admin/stores/{storeSlug}/products
+POST   /api/v1/admin/stores/{storeSlug}/products
+PUT    /api/v1/admin/stores/{storeSlug}/products/{id}
+DELETE /api/v1/admin/stores/{storeSlug}/products/{id}
+```
+
+## Categorias
+
+```txt
+GET    /api/v1/admin/stores/{storeSlug}/categories
+POST   /api/v1/admin/stores/{storeSlug}/categories
+PUT    /api/v1/admin/stores/{storeSlug}/categories/{id}
+DELETE /api/v1/admin/stores/{storeSlug}/categories/{id}
+```
+
+## Convites
+
+```txt
+POST   /api/v1/admin/stores/{storeSlug}/invites
+GET    /api/v1/admin/stores/{storeSlug}/invites
+DELETE /api/v1/admin/stores/{storeSlug}/invites/{inviteId}
+```
+
+---
+
+# 👥 Sistema de Convites
+
+Apenas usuários com role `OWNER` podem convidar administradores.
+
+Fluxo:
+
+1. OWNER envia convite
+2. Backend gera token único
+3. Frontend envia link ao convidado
+4. Usuário aceita convite autenticado
+5. Backend adiciona usuário à loja
+
+---
+
+# 🧑‍💼 Roles do Sistema
+
+## OWNER
+
+Permissões:
+
+- gerenciar produtos
+- gerenciar categorias
+- convidar administradores
+- remover membros
+- alterar configurações da loja
+
+## ADMIN
+
+Permissões:
+
+- gerenciar produtos
+- gerenciar categorias
+
+---
+
+# 🖼️ Upload de Imagens
+
+As imagens são armazenadas no Cloudinary.
+
+Fluxo:
+
+1. Frontend envia imagem
+2. Backend valida:
+   - tipo
+   - tamanho
+   - quantidade
+3. Backend envia para Cloudinary
+4. URL da imagem é salva no banco
+
+Tipos permitidos:
+
+- image/jpeg
+- image/png
+- image/webp
+
+Limites:
+
+- máximo de 5MB por imagem
+- máximo de 8 imagens por produto
+
+---
+
+# 🗄️ Banco de Dados
+
+Principais entidades:
+
+- Store
+- Product
+- Category
+- ProductImage
+- User
+- StoreUser
+- StoreInvite
+
+Relacionamento principal:
+
+```txt
+User ↔ Store
+```
+
+feito via tabela intermediária:
+
+```txt
+store_users
+```
+
+---
+
+# 🔗 Slugs
+
+A API utiliza slugs para URLs amigáveis.
+
+Exemplos:
+
+```txt
+/minha-loja
+/produto/vestido-floral-azul
+/categoria/vestidos
+```
+
+Regras:
+
+- minúsculo
+- sem espaços
+- sem caracteres especiais
+- unicidade por loja
+
+Os slugs são gerados automaticamente pelo backend.
+
+---
+
+# 🗑️ Soft Delete
+
+Produtos e categorias utilizam soft delete.
+
+Campo:
+
+```txt
+deletedAt
+```
+
+Isso permite:
+
+- preservar histórico
+- evitar inconsistências
+- recuperação futura de dados
+
+---
+
+# 📄 Paginação
+
+Todos os endpoints de listagem utilizam paginação.
+
+Exemplo:
+
+```txt
+GET /products?page=0&size=20&sort=price,asc
+```
+
+Formato padrão:
+
+```json
+{
+  "content": [],
+  "page": 0,
+  "size": 20,
+  "totalElements": 134,
+  "totalPages": 7,
+  "last": false
+}
+```
+
+---
+
+# 🐳 Docker
+
+O projeto possui suporte para containerização com Docker.
+
+Arquivos presentes:
+
+```txt
+Dockerfile
+docker-compose.yml
+```
+
+---
+
+# ⚡ Boas Práticas Aplicadas
+
+- arquitetura em camadas
+- DTOs
+- validação de entrada
+- tratamento global de exceções
+- logs estruturados
+- versionamento de API
+- isolamento multi-tenant
+- segurança via JWT
+- separação entre regras de negócio e controllers
+
+---
+
+# 📜 Logs
+
+O sistema utiliza:
+
+- SLF4J
+- Logback
+
+Exemplos:
+
+```txt
+INFO  StoreService   - Store created: storeId=15
+WARN  SecurityFilter - Unauthorized access attempt
+ERROR ProductService - Error saving product
+```
+
+---
+
+# 🧪 Roadmap
+
+## Curto Prazo
+
+- [ ] Deploy oficial
+- [ ] Rate limiting
+- [ ] Cache
+
+## Médio Prazo
+
+- [ ] Sistema de planos
+- [ ] Bloqueio automático de lojas
+- [ ] Analytics com Google Analytics
+
+## Longo Prazo
+
+- [ ] Domínio próprio por loja
+- [ ] Subdomínios automáticos
+- [ ] Observabilidade
+
+---
+
+# ⚠️ Aviso
 
 Este projeto ainda está em desenvolvimento e pode conter:
 
-- Funcionalidades incompletas
-- Mudanças frequentes na estrutura
-- Possíveis bugs
+- funcionalidades incompletas
+- mudanças estruturais
+- possíveis bugs
+- ajustes arquiteturais
 
-Não é recomendado para uso em produção neste momento.
-
----
-
-## 🎯 Objetivo
-
-- Resolver um problema real de pequenas lojas
-- Criar um projeto sólido para portfólio
-- Evoluir para um SaaS escalável no futuro
+Atualmente não é recomendado para produção em larga escala.
 
 ---
 
-## 📌 Roadmap (Próximos Passos)
+# 🤝 Contribuição
 
-- [ ] Deploy completo (frontend + backend)
-- [ ] Integração real com API
-- [ ] Melhorias de UI/UX
-- [ ] Sistema de planos (SaaS)
-- [ ] Otimizações de performance
+Sugestões, melhorias e feedbacks são bem-vindos.
 
 ---
 
-## 🤝 Contribuição
+# 📄 Licença
 
-Este projeto está em fase inicial, mas sugestões e melhorias são bem-vindas.
+Este software é proprietário e não está licenciado para uso público, modificação ou distribuição.
 
----
-
-## 📄 Licença
-
-Este projeto está sob a licença MIT.
+© 2026 Gabriel Oliveira. Todos os direitos reservados.
 
 ---
 
-## 👨‍💻 Autor
+# 👨‍💻 Autor
 
-Desenvolvido por Gabriel Oliveira
+Desenvolvido por Gabriel Oliveira.
