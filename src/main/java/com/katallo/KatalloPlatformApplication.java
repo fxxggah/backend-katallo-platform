@@ -24,11 +24,6 @@ public class KatalloPlatformApplication {
 		System.setProperty("MY_CLIENT_ID", dotenv.get("MY_CLIENT_ID"));
 		System.setProperty("JWT_SECRET", dotenv.get("JWT_SECRET"));
 
-		System.setProperty(
-				"STORE_PASSWORD",
-				dotenv.get("STORE_PASSWORD")
-		);
-
 		SpringApplication.run(KatalloPlatformApplication.class, args);
 	}
 }
