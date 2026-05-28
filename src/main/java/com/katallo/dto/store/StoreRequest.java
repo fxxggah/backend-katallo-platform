@@ -32,4 +32,6 @@ public class StoreRequest {
 
     private String googleMapsLink;
 
+    private String password;
+
 }

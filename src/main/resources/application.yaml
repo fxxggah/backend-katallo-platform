@@ -33,3 +33,6 @@ jwt:
 
 google:
   client-id: ${MY_CLIENT_ID}
+
+app:
+  password: ${STORE_PASSWORD}

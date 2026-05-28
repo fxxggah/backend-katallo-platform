@@ -7,11 +7,13 @@ import com.katallo.domain.enums.Role;
 import com.katallo.dto.store.StoreRequest;
 import com.katallo.dto.store.StoreResponse;
 import com.katallo.domain.enums.ErrorCode;
+import com.katallo.exception.ForbiddenException;
 import com.katallo.exception.NotFoundException;
 import com.katallo.repository.StoreRepository;
 import com.katallo.repository.StoreUserRepository;
 import com.katallo.util.SlugUtils;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,8 +28,19 @@ public class StoreService {
     private final StoreUserRepository storeUserRepository;
     private final AccessControlService access;
 
+    @Value("${app.password}")
+    private String password;
+
     @Transactional
     public StoreResponse create(StoreRequest req, Long userId) {
+
+        if (!password.equals(req.getPassword())) {
+            throw new ForbiddenException(
+                    ErrorCode.ACCESS_DENIED,
+                    "Senha inválida."
+            );
+        }
+
         String generatedSlug = generateUniqueStoreSlug(req.getName());
 
         Store store = new Store();
