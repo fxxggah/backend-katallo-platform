@@ -49,10 +49,10 @@ public class SecurityConfig {
                         ).permitAll()
 
                         .requestMatchers(
-                                "/api/v1/stores/{slug}"
+                                HttpMethod.GET,
+                                "/api/v1/stores/**"
                         ).permitAll()
 
-                        // Todo resto autenticado
                         .anyRequest().authenticated()
                 )
 
