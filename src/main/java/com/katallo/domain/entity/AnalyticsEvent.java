@@ -26,17 +26,10 @@ public class AnalyticsEvent {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    /**
-     * Loja onde o evento aconteceu.
-     */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "store_id", nullable = false)
     private Store store;
 
-    /**
-     * Produto relacionado ao evento.
-     * Pode ser null em eventos como STORE_VIEW e WHATSAPP_CLICK geral.
-     */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id")
     private Product product;
