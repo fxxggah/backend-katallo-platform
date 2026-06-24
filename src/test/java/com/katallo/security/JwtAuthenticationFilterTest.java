@@ -9,6 +9,7 @@ import org.springframework.mock.web.MockFilterChain;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.core.context.SecurityContextHolder;
+import tools.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
 
@@ -19,7 +20,10 @@ import static org.mockito.Mockito.*;
 class JwtAuthenticationFilterTest {
 
     private final JwtService jwtService = mock(JwtService.class);
-    private final JwtAuthenticationFilter filter = new JwtAuthenticationFilter(jwtService);
+    private final ObjectMapper objectMapper = mock(ObjectMapper.class);
+
+    private final JwtAuthenticationFilter filter =
+            new JwtAuthenticationFilter(jwtService, objectMapper);
 
     @AfterEach
     void limparContexto() {
