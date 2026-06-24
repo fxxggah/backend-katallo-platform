@@ -1,5 +1,7 @@
 package com.katallo.security;
 
+import com.katallo.domain.enums.ErrorCode;
+import com.katallo.exception.UnauthorizedException;
 import com.katallo.service.auth.JwtService;
 import jakarta.servlet.ServletException;
 import org.junit.jupiter.api.AfterEach;
@@ -32,65 +34,95 @@ class JwtAuthenticationFilterTest {
 
     @Test
     @DisplayName("Deve continuar filtro quando Authorization não existir")
-    void deveContinuarFiltroQuandoAuthorizationNaoExistir() throws ServletException, IOException {
+    void deveContinuarFiltroQuandoAuthorizationNaoExistir()
+            throws ServletException, IOException {
+
         MockHttpServletRequest request = new MockHttpServletRequest();
         MockHttpServletResponse response = new MockHttpServletResponse();
         MockFilterChain chain = new MockFilterChain();
 
         filter.doFilter(request, response, chain);
 
-        assertThat(SecurityContextHolder.getContext().getAuthentication()).isNull();
+        assertThat(SecurityContextHolder.getContext().getAuthentication())
+                .isNull();
+
         verifyNoInteractions(jwtService);
     }
 
     @Test
     @DisplayName("Deve continuar filtro quando Authorization não começar com Bearer")
-    void deveContinuarFiltroQuandoAuthorizationNaoComecarComBearer() throws ServletException, IOException {
+    void deveContinuarFiltroQuandoAuthorizationNaoComecarComBearer()
+            throws ServletException, IOException {
+
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.addHeader("Authorization", "Basic token");
+
         MockHttpServletResponse response = new MockHttpServletResponse();
         MockFilterChain chain = new MockFilterChain();
 
         filter.doFilter(request, response, chain);
 
-        assertThat(SecurityContextHolder.getContext().getAuthentication()).isNull();
+        assertThat(SecurityContextHolder.getContext().getAuthentication())
+                .isNull();
+
         verifyNoInteractions(jwtService);
     }
 
     @Test
-    @DisplayName("Deve continuar filtro sem autenticar quando token for inválido")
-    void deveContinuarFiltroSemAutenticarQuandoTokenForInvalido() throws ServletException, IOException {
+    @DisplayName("Deve retornar 401 quando token for inválido")
+    void deveRetornar401QuandoTokenForInvalido()
+            throws ServletException, IOException {
+
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.addHeader("Authorization", "Bearer token-invalido");
+
         MockHttpServletResponse response = new MockHttpServletResponse();
         MockFilterChain chain = new MockFilterChain();
 
-        when(jwtService.isValid("token-invalido")).thenReturn(false);
+        when(jwtService.getUserId("token-invalido"))
+                .thenThrow(
+                        new UnauthorizedException(
+                                ErrorCode.INVALID_TOKEN,
+                                "Token inválido."
+                        )
+                );
+
+        when(objectMapper.writeValueAsString(any()))
+                .thenReturn("{\"error\":\"INVALID_TOKEN\"}");
 
         filter.doFilter(request, response, chain);
 
-        assertThat(SecurityContextHolder.getContext().getAuthentication()).isNull();
-        verify(jwtService).isValid("token-invalido");
-        verify(jwtService, never()).getUserId(anyString());
+        assertThat(SecurityContextHolder.getContext().getAuthentication())
+                .isNull();
+
+        assertThat(response.getStatus()).isEqualTo(401);
+
+        verify(jwtService).getUserId("token-invalido");
     }
 
     @Test
     @DisplayName("Deve autenticar usuário quando token for válido")
-    void deveAutenticarUsuarioQuandoTokenForValido() throws ServletException, IOException {
+    void deveAutenticarUsuarioQuandoTokenForValido()
+            throws ServletException, IOException {
+
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.addHeader("Authorization", "Bearer token-valido");
+
         MockHttpServletResponse response = new MockHttpServletResponse();
         MockFilterChain chain = new MockFilterChain();
 
-        when(jwtService.isValid("token-valido")).thenReturn(true);
-        when(jwtService.getUserId("token-valido")).thenReturn(99L);
+        when(jwtService.getUserId("token-valido"))
+                .thenReturn(99L);
 
         filter.doFilter(request, response, chain);
 
-        var authentication = SecurityContextHolder.getContext().getAuthentication();
+        var authentication =
+                SecurityContextHolder.getContext().getAuthentication();
 
         assertThat(authentication).isNotNull();
         assertThat(authentication.getPrincipal()).isEqualTo(99L);
         assertThat(authentication.isAuthenticated()).isTrue();
+
+        verify(jwtService).getUserId("token-valido");
     }
 }
