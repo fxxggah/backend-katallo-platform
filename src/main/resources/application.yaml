@@ -16,11 +16,11 @@ spring:
   jpa:
     open-in-view: false
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate
     show-sql: true
     properties:
       hibernate:
-        ddl-auto: update
+        ddl-auto: validate
         format_sql: true
         dialect: org.hibernate.dialect.MySQLDialect
 
