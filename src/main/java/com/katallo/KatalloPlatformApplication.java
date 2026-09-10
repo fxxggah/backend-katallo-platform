@@ -8,7 +8,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class KatalloPlatformApplication {
 
 	public static void main(String[] args) {
-		-
 		SpringApplication.run(KatalloPlatformApplication.class, args);
 	}
 }
