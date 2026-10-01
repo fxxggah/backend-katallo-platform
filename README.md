@@ -1,4 +1,4 @@
-# ⚙️ Katallo Backend — API da: Katallo | Catálogos Online
+# ⚙️ Katallo Backend 
 
 O backend da **Katallo** é responsável por toda a lógica de negócio da plataforma, incluindo:
 
