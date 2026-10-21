@@ -492,7 +492,7 @@ ERROR ProductService - Error saving product
 
 # ⚠️ Aviso
 
-Este projeto ainda está em desenvolvimento e pode conter:
+Este  projeto ainda está em desenvolvimento e pode conter:
 
 - funcionalidades incompletas
 - mudanças estruturais
